@@ -26,17 +26,31 @@ long_study =
 
 control = long_study %>% 
   filter(str_detect(df_long_study, "./data/con")) %>%
-  mutate(subject_id = row_number(), subject_id = as.character(subject_id), subject_id = str_c(subject_id, "c")) %>%
+  mutate(subject_id = row_number(), subject_id = as.character(subject_id), subject_id = str_c(subject_id, "_control")) %>%
   
 experimental = long_study %>% 
   filter(str_detect(df_long_study, "./data/exp")) %>%
-  mutate(subject_id = row_number(), subject_id = as.character(subject_id), subject_id = str_c(subject_id, "e")) %>% 
+  mutate(subject_id = row_number(), subject_id = as.character(subject_id), subject_id = str_c(subject_id, "_exp")) %>% 
 
 all_cases = 
   rbind(control, experimental) %>% 
-  select(-df_long_study)
+  select(-df_long_study) %>%
+  separate(subject_id, into = c("subject_id", "arm"), sep = "_") %>% 
+  mutate(subject_id = as.character(subject_id)) %>% 
+  gather(key = week, value = obs, week_1:week_8) %>% 
+  mutate(week = str_sub(week, start = 6, end = 6), 
+         week = as.numeric(week)) 
+
 ```
 
+```{r}
+all_cases %>% 
+  ggplot(aes(x = week, y = obs, color = subject_id)) + 
+  geom_line() +
+  
+  facet_grid(~arm)
+```
+There are more observations in the experimental arm than in the control arm over the weeks of the study. 
 
 
 
@@ -83,9 +97,18 @@ Save prop.test as an object:
 prop_test = 
   prop.test(homicide_table$unsolved, homicide_table$total)
 
-broom::tidy(prop_test)
+
+  broom::tidy(prop_test) %>% 
+  select(estimate, conf.low, conf.high)
+  
 ```
 
+
+```{r}
+
+```
+
+FUNCTION!?
 ```{r}
 output = homicide_table %>% 
   mutate(proportion = map2(.x = unsolved, .y = total, ~prop.test(x = .x, n = .y)))
