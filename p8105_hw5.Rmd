@@ -12,18 +12,17 @@ library(tidyverse)
 library(rvest)
 ```
 
-Loading in the CSV files
+#Problem 1
 ```{r}
 
 df_long_study = str_c("./data/", list.files(path = "./data"))
 
 
-long_study = function(x) {
-  
-   read_csv(x)
-}
-  
-
-map(df_long_study, long_study)
+long_study = 
+  tibble(df_long_study) %>% 
+  mutate(data = map(df_long_study, read_csv)) %>% 
+  unnest()
 ```
+
+
 
