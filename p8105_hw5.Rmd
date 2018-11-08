@@ -10,6 +10,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 library(tidyverse)
 library(rvest)
+library(broom)
 ```
 
 #Problem 1
@@ -73,11 +74,21 @@ unsolved = homicides %>%
 
 ```{r}
 homicide_table = 
-  merge(city, unsolved)
+  merge(city, unsolved) %>% 
+  filter(city_state == "Baltimore, MD")
+```
+
+Save prop.test as an object: 
+```{r}
+prop_test = 
+  prop.test(homicide_table$unsolved, homicide_table$total)
+
+broom::tidy(prop_test)
 ```
 
 ```{r}
-prop.test(homicide_table$unsolved, homicide_table$total)
+output = homicide_table %>% 
+  mutate(proportion = map2(.x = unsolved, .y = total, ~prop.test(x = .x, n = .y)))
 ```
 
 
