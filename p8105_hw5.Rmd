@@ -22,7 +22,66 @@ long_study =
   tibble(df_long_study) %>% 
   mutate(data = map(df_long_study, read_csv)) %>% 
   unnest()
+
+control = long_study %>% 
+  filter(str_detect(df_long_study, "./data/con")) %>%
+  mutate(subject_id = row_number(), subject_id = as.character(subject_id), subject_id = str_c(subject_id, "c")) %>%
+  
+experimental = long_study %>% 
+  filter(str_detect(df_long_study, "./data/exp")) %>%
+  mutate(subject_id = row_number(), subject_id = as.character(subject_id), subject_id = str_c(subject_id, "e")) %>% 
+
+all_cases = 
+  rbind(control, experimental) %>% 
+  select(-df_long_study)
 ```
+
+
+
+
+
+#Problem 2 
+Importing the CSV
+```{r}
+homicides = read_csv("./data-homicides-master/homicide-data.csv") %>% 
+  janitor::clean_names()
+```
+
+The data has 12 columns and 52179 rows. The columns/variables include: dates of homicide and information about the victim like their 's name, race, age. Additional variables include the city/state that the homicide occurred accompanied with latitude and longitude data. Finally, the dataset includes the disposition information, which describes if the case is closed with or without arrest. nn  
+
+```{r}
+homicides = homicides %>%
+  unite(city, state, col = "city_state", sep = ", ")
+```
+
+summarize within cities to obtain the total number of homicides and the number of unsolved homicides (those for which the disposition is “Closed without arrest” or “Open/No arrest”).
+
+Number of homicides within cities:
+```{r}
+city = homicides %>% 
+  group_by(city_state) %>% 
+  summarize(total = n())
+```
+
+Number of unsolved homicides within cities:
+```{r}
+unsolved = homicides %>% 
+  filter(disposition == "Closed without arrest" | disposition == "Open/No arrest") %>% 
+  group_by(city_state) %>%
+  summarize(unsolved = n())
+```
+
+```{r}
+homicide_table = 
+  merge(city, unsolved)
+```
+
+```{r}
+prop.test(homicide_table$unsolved, homicide_table$total)
+```
+
+
+
 
 
 
