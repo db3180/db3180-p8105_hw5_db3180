@@ -81,6 +81,12 @@ unsolved = homicides %>%
   summarize(unsolved = n())
 ```
 
+Both dataframes merged together: 
+```{r}
+all_city_homicides = 
+merge(city, unsolved)
+```
+
 Creating a function:
 ```{r}
 homicide_function = function(df) {
@@ -90,6 +96,9 @@ homicide_function = function(df) {
   select(estimate, conf.low, conf.high)
   }
 ```
+
+
+
 
 Baltimore:
 ```{r}
