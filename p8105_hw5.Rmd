@@ -15,26 +15,20 @@ library(broom)
 
 #Problem 1
 ```{r}
-
 df_long_study = str_c("./data/", list.files(path = "./data"))
 
-
-long_study = 
-  tibble(df_long_study) %>% 
-  mutate(data = map(df_long_study, read_csv)) %>% 
-  unnest()
-
-control = long_study %>% 
-  filter(str_detect(df_long_study, "./data/con")) %>%
-  mutate(subject_id = row_number(), subject_id = as.character(subject_id), subject_id = str_c(subject_id, "_control")) %>%
+long = map_dfr(df_long_study, read_csv)
   
-experimental = long_study %>% 
+control = long %>% 
+  filter(str_detect(df_long_study, "./data/con")) %>%
+  mutate(subject_id = row_number(), subject_id = as.character(subject_id),  subject_id = str_c(subject_id, "_control"))
+  
+experimental = long %>% 
   filter(str_detect(df_long_study, "./data/exp")) %>%
-  mutate(subject_id = row_number(), subject_id = as.character(subject_id), subject_id = str_c(subject_id, "_exp")) %>% 
+  mutate(subject_id = row_number(), subject_id = as.character(subject_id), subject_id = str_c(subject_id, "_exp"))
 
 all_cases = 
   rbind(control, experimental) %>% 
-  select(-df_long_study) %>%
   separate(subject_id, into = c("subject_id", "arm"), sep = "_") %>% 
   mutate(subject_id = as.character(subject_id)) %>% 
   gather(key = week, value = obs, week_1:week_8) %>% 
@@ -97,24 +91,28 @@ Save prop.test as an object:
 prop_test = 
   prop.test(homicide_table$unsolved, homicide_table$total)
 
-
   broom::tidy(prop_test) %>% 
+  
   select(estimate, conf.low, conf.high)
   
 ```
 
-
+All cities: 
 ```{r}
+all_city_homicides = 
+  merge(city, unsolved)
+
+all_cities = prop.test(all_city_homicides$unsolved, all_city_homicides$total)
+
+broom::tidy(all_cities) %>% 
 
 ```
 
-FUNCTION!?
+
 ```{r}
-output = homicide_table %>% 
-  mutate(proportion = map2(.x = unsolved, .y = total, ~prop.test(x = .x, n = .y)))
+output = all_city_homicides %>% 
+  mutate(list = map2(.x = unsolved, .y = total, ~prop.test(x = .x, n = .y)))
 ```
-
-
 
 
 
